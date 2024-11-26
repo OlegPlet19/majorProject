@@ -16,19 +16,20 @@ class Player {
   }
 
   move() {
-    if (keyIsDown(65)) {
+    // Need to set restrictions when on level separately from restrictions on bridge.
+    if (keyIsDown(65) && player.x >= room.x - room.size/2 + player.size) { // Letf movement
       this.x -= this.speed;
     }
   
-    if (keyIsDown(68)) {
+    if (keyIsDown(68) && player.x <= room.x + room.size/2 - player.size) { // Right movement
       this.x += this.speed;
     }
   
-    if (keyIsDown(87)) {
+    if (keyIsDown(87) && player.y >= room.y - room.size/2 + player.size) { // Up movement
       this.y -= this.speed;
     }
   
-    if (keyIsDown(83)) {
+    if (keyIsDown(83) && player.y <= room.y + room.size/2 - player.size) { // Down movenment
       this.y += this.speed;
     }
   }
@@ -39,7 +40,45 @@ class Player {
   }
 }
 
-let player = new Player(200, 200, 5, 100);
+let room = {
+  x : 1920/2,
+  y : 1080/2,
+  size : 500,
+} ;
+
+let rightSideBridge = {
+  x : room.x + room.size/2,
+  y : room.y - 100/2,
+  xSize : 300,
+  ySize : 100,
+  isOpen : false,
+} ;
+
+let leftSideBridge = {
+  x : room.x - room.size - 50,
+  y : room.y - 100/2,
+  xSize : 300,
+  ySize : 100,
+  isOpen : false,
+} ;
+
+let upSideBridge = {
+  x : room.x - 100/2,
+  y : room.y - room.size - 50,
+  xSize : 100,
+  ySize : 300,
+  isOpen : false,
+} ;
+
+let bottomSideBridge = {
+  x : room.x - 100/2,
+  y : room.y + room.size/2,
+  xSize : 100,
+  ySize : 300,
+  isOpen : false,
+} ;
+
+let player = new Player(room.x, room.y, 5, room.size/20);
 
 // function preload() {
 //   player.image = loadImage("DarkKnightGif.gif");
@@ -51,9 +90,21 @@ function setup() {
 
 function draw() {
   background(220);
-  rect(windowWidth/2 - 250, windowHeight/2 - 250, 500);
-  player.move();
+  
+  // Main room
+  rect(room.x - room.size/2, room.y - room.size/2, room.size);
+  // Right Bridge
+  rect(rightSideBridge.x, rightSideBridge.y, rightSideBridge.xSize, rightSideBridge.ySize);
+  // Left Bridge
+  rect(leftSideBridge.x, leftSideBridge.y, leftSideBridge.xSize, leftSideBridge.ySize);
+  // Up Bridge
+  rect(upSideBridge.x, upSideBridge.y, upSideBridge.xSize, upSideBridge.ySize);
+  // Bottom Bridge
+  rect(bottomSideBridge.x, bottomSideBridge.y, bottomSideBridge.xSize, bottomSideBridge.ySize);
+  
+  // Player
   player.display(); 
+  player.move();
 }
 
 
