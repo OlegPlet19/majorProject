@@ -1,5 +1,5 @@
 // CS30 Major Project
-// Dmitrii Pletmintsev
+// Oleh Pletmintsev, Dmitrii Pletmintsev
 // 11/18/24
 //
 // Extra for Experts:
@@ -15,7 +15,7 @@ class Player {
     this.size = size;
   }
 
-  move() {
+  moveInsideRoom() {
     // Need to set restrictions when on level separately from restrictions on bridge.
     if (keyIsDown(65) && player.x >= room.x - room.size/2 + player.size) { // Letf movement
       this.x -= this.speed;
@@ -31,6 +31,24 @@ class Player {
   
     if (keyIsDown(83) && player.y <= room.y + room.size/2 - player.size) { // Down movenment
       this.y += this.speed;
+    }
+  }
+
+  moveToBridge() {
+    if (keyIsDown(65) && // Moving Left
+    player.x <= room.x - room.size/2 + player.size && // Position of x outside room
+    player.y <= room.y + leftSideBridge.ySize - 50 && // Pos y to bridge
+    player.y >= room.y - leftSideBridge.ySize + 50
+    ) { // Letf movement
+      this.x -= this.speed;
+    }
+
+    if (keyIsDown(68) && // Moving Right
+    player.x >= room.x - room.size/2 + player.size && // Position of x outside room
+    player.y <= room.y + leftSideBridge.ySize - 50 && // Pos y to bridge
+    player.y >= room.y - leftSideBridge.ySize + 50
+    ) { // Right movement
+      this.x += this.speed;
     }
   }
 
@@ -101,12 +119,12 @@ function draw() {
   rect(upSideBridge.x, upSideBridge.y, upSideBridge.xSize, upSideBridge.ySize);
   // Bottom Bridge
   rect(bottomSideBridge.x, bottomSideBridge.y, bottomSideBridge.xSize, bottomSideBridge.ySize);
-  
+
   // Player
   player.display(); 
-  player.move();
+  player.moveInsideRoom();
+  player.moveToBridge();
 }
-
 
 function windowResized() {
   if (windowWidth < windowHeight) {
