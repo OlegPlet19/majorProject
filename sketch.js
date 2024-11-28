@@ -17,26 +17,34 @@ class Player {
 
   moveInsideRoom() {
     // Need to set restrictions when on level separately from restrictions on bridge.
-    if (keyIsDown(65) && player.x >= room.x - room.size/2 + player.size) { // Letf movement
+    if (keyIsDown(65) && 
+    player.x >= room.x - room.size/2 + player.size
+    ) { // Letf movement
       this.x -= this.speed;
     }
   
-    if (keyIsDown(68) && player.x <= room.x + room.size/2 - player.size) { // Right movement
+    if (keyIsDown(68) && 
+    player.x <= room.x + room.size/2 - player.size
+    ) { // Right movement
       this.x += this.speed;
     }
   
-    if (keyIsDown(87) && player.y >= room.y - room.size/2 + player.size) { // Up movement
+    if (keyIsDown(87) && 
+    player.y >= room.y - room.size/2 + player.size
+    ) { // Up movement
       this.y -= this.speed;
     }
   
-    if (keyIsDown(83) && player.y <= room.y + room.size/2 - player.size) { // Down movenment
+    if (keyIsDown(83) && 
+    player.y <= room.y + room.size/2 - player.size
+    ) { // Down movenment
       this.y += this.speed;
     }
   }
 
   moveToBridge() {
     if (keyIsDown(65) && // Moving Left
-    player.x <= room.x - room.size/2 + player.size && // Position of x outside room
+    player.x <= room.x - room.size/2 + player.size && // Position of x outside of room
     player.y <= room.y + leftSideBridge.ySize - 50 && // Pos y to bridge
     player.y >= room.y - leftSideBridge.ySize + 50
     ) { // Letf movement
@@ -44,17 +52,41 @@ class Player {
     }
 
     if (keyIsDown(68) && // Moving Right
-    player.x >= room.x - room.size/2 + player.size && // Position of x outside room
-    player.y <= room.y + leftSideBridge.ySize - 50 && // Pos y to bridge
-    player.y >= room.y - leftSideBridge.ySize + 50
+    player.x >= room.x - room.size/2 + player.size && // Position of x outside of room
+    player.y <= room.y + rightSideBridge.ySize - 50 && // Pos y to bridge
+    player.y >= room.y - rightSideBridge.ySize + 50
     ) { // Right movement
       this.x += this.speed;
     }
+
+    if (keyIsDown(87) && // Moving Up
+    player.y <= room.y - room.size/2 + player.size && // Position of y outside of room
+    player.x <= room.x + upSideBridge.xSize - 50 && // Pos x to bridge
+    player.x >= room.x - upSideBridge.xSize + 50
+    ) { // Up movement
+      this.y -= this.speed;
+    }
+
+    if (keyIsDown(83) && // Moving Down
+    player.y >= room.y - room.size/2 + player.size && // Position of y outside of room
+    player.x <= room.x + bottomSideBridge.xSize - 50 && // Pos x to bridge
+    player.x >= room.x - bottomSideBridge.xSize + 50
+    ) { // Down movement
+      this.y += this.speed;
+    }
   }
+
+  // moveInsideHorizontalBridge() {
+  //   if (keyIsDown(87) && // Moving Up
+  //   player.y <= leftSideBridge.y - leftSideBridge.ySize/2 + player.size && // Position of y outside of room
+  //   player.y >= leftSideBridge.y + leftSideBridge.ySize/2 - player.size
+  //   ) { // Up movement
+  //     this.y -= this.speed;
+  //   }
+  // }
 
   display() {
     circle(player.x, player.y, 35);
-    //image(this.image, this.x, this.y, this.size, this.size);
   }
 }
 
@@ -98,10 +130,6 @@ let bottomSideBridge = {
 
 let player = new Player(room.x, room.y, 5, room.size/20);
 
-// function preload() {
-//   player.image = loadImage("DarkKnightGif.gif");
-// }
-
 function setup() {
   createCanvas(windowWidth, windowHeight);
 }
@@ -111,6 +139,7 @@ function draw() {
   
   // Main room
   rect(room.x - room.size/2, room.y - room.size/2, room.size);
+
   // Right Bridge
   rect(rightSideBridge.x, rightSideBridge.y, rightSideBridge.xSize, rightSideBridge.ySize);
   // Left Bridge
@@ -124,6 +153,7 @@ function draw() {
   player.display(); 
   player.moveInsideRoom();
   player.moveToBridge();
+  // player.moveInsideHorizontalBridge();
 }
 
 function windowResized() {
