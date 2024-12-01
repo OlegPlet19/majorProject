@@ -15,114 +15,105 @@ class Player {
     this.size = size;
   }
 
-  moveInsideRoom() {
-    // Need to set restrictions when on level separately from restrictions on bridge.
-    if (keyIsDown(65) && 
-    player.x >= room.x - room.size/2 + player.size
-    ) { // Letf movement
-      this.x -= this.speed;
+  move() {
+    let newX = this.x;
+    let newY = this.y;
+
+    if (keyIsDown(65)) { // Left
+      newX -= this.speed;
     }
-  
-    if (keyIsDown(68) && 
-    player.x <= room.x + room.size/2 - player.size
-    ) { // Right movement
-      this.x += this.speed;
+    if (keyIsDown(68)) { // Right
+      newX += this.speed;
     }
-  
-    if (keyIsDown(87) && 
-    player.y >= room.y - room.size/2 + player.size
-    ) { // Up movement
-      this.y -= this.speed;
+    if (keyIsDown(87)) { // Up
+      newY -= this.speed;
     }
-  
-    if (keyIsDown(83) && 
-    player.y <= room.y + room.size/2 - player.size
-    ) { // Down movenment
-      this.y += this.speed;
+    if (keyIsDown(83)) { // Down
+      newY += this.speed;
+    }
+
+    // Check if the new position is inside the room or bridges
+    if (this.isInsideRoom(newX, newY) || this.isOnBridge(newX, newY)) {
+      this.x = newX;
+      this.y = newY;
     }
   }
 
-  moveToBridge() {
-    if (keyIsDown(65) && // Moving Left
-    player.x <= room.x - room.size/2 + player.size && // Position of x outside of room
-    player.y <= room.y + leftSideBridge.ySize - 50 && // Pos y to bridge
-    player.y >= room.y - leftSideBridge.ySize + 50
-    ) { // Letf movement
-      this.x -= this.speed;
-    }
-
-    if (keyIsDown(68) && // Moving Right
-    player.x >= room.x - room.size/2 + player.size && // Position of x outside of room
-    player.y <= room.y + rightSideBridge.ySize - 50 && // Pos y to bridge
-    player.y >= room.y - rightSideBridge.ySize + 50
-    ) { // Right movement
-      this.x += this.speed;
-    }
-
-    if (keyIsDown(87) && // Moving Up
-    player.y <= room.y - room.size/2 + player.size && // Position of y outside of room
-    player.x <= room.x + upSideBridge.xSize - 50 && // Pos x to bridge
-    player.x >= room.x - upSideBridge.xSize + 50
-    ) { // Up movement
-      this.y -= this.speed;
-    }
-
-    if (keyIsDown(83) && // Moving Down
-    player.y >= room.y - room.size/2 + player.size && // Position of y outside of room
-    player.x <= room.x + bottomSideBridge.xSize - 50 && // Pos x to bridge
-    player.x >= room.x - bottomSideBridge.xSize + 50
-    ) { // Down movement
-      this.y += this.speed;
-    }
+  isInsideRoom(x, y) {
+    return ( // Return t/f if player inside room
+      x >= room.x - room.size / 2 + this.size &&
+      x <= room.x + room.size / 2 - this.size &&
+      y >= room.y - room.size / 2 + this.size &&
+      y <= room.y + room.size / 2 - this.size
+    );
   }
 
-  // moveInsideHorizontalBridge() {
-  //   if (keyIsDown(87) && // Moving Up
-  //   player.y <= leftSideBridge.y - leftSideBridge.ySize/2 + player.size && // Position of y outside of room
-  //   player.y >= leftSideBridge.y + leftSideBridge.ySize/2 - player.size
-  //   ) { // Up movement
-  //     this.y -= this.speed;
-  //   }
-  // }
+  isOnBridge(x, y) {
+    return ( // Return t/f if player on bridge
+      // Right bridge
+      (x >= rightSideBridge.x - this.size &&   
+        x <= rightSideBridge.x + rightSideBridge.xSize + this.size &&
+        y >= rightSideBridge.y + this.size &&
+        y <= rightSideBridge.y + rightSideBridge.ySize - this.size) ||
+      // Left bridge
+      (x >= leftSideBridge.x - this.size &&
+        x <= leftSideBridge.x + leftSideBridge.xSize + this.size &&
+        y >= leftSideBridge.y + this.size &&
+        y <= leftSideBridge.y + leftSideBridge.ySize - this.size) ||
+      // Up bridge
+      (x >= upSideBridge.x + this.size &&
+        x <= upSideBridge.x + upSideBridge.xSize - this.size &&
+        y >= upSideBridge.y - this.size &&
+        y <= upSideBridge.y + upSideBridge.ySize + this.size) ||
+      // Bottom bridge
+      (x >= bottomSideBridge.x + this.size &&
+        x <= bottomSideBridge.x + bottomSideBridge.xSize -  this.size &&
+        y >= bottomSideBridge.y - this.size &&
+        y <= bottomSideBridge.y + bottomSideBridge.ySize + this.size)
+    );
+  }
 
   display() {
-    circle(player.x, player.y, 35);
+    // Player
+    circle(this.x, this.y, this.size * 2);
   }
 }
 
+// Main room
 let room = {
-  x : 1920/2,
-  y : 1080/2,
-  size : 500,
+  x: 1920 / 2,
+  y: 1080 / 2,
+  size: 200,
 } ;
 
+// Bridges
 let rightSideBridge = {
-  x : room.x + room.size/2,
-  y : room.y - 100/2,
+  x : room.x + room.size / 2,
+  y : room.y - 50,
   xSize : 300,
   ySize : 100,
   isOpen : false,
 } ;
 
 let leftSideBridge = {
-  x : room.x - room.size - 50,
-  y : room.y - 100/2,
+  x : room.x - room.size / 2 - 300,
+  y : room.y - 50,
   xSize : 300,
   ySize : 100,
   isOpen : false,
 } ;
 
 let upSideBridge = {
-  x : room.x - 100/2,
-  y : room.y - room.size - 50,
+  x : room.x - 50,
+  y : room.y - room.size / 2 - 300,
   xSize : 100,
   ySize : 300,
   isOpen : false,
 } ;
 
 let bottomSideBridge = {
-  x : room.x - 100/2,
-  y : room.y + room.size/2,
+  x : room.x - 50,
+  y : room.y + room.size / 2,
   xSize : 100,
   ySize : 300,
   isOpen : false,
@@ -138,7 +129,7 @@ function draw() {
   background(220);
   
   // Main room
-  rect(room.x - room.size/2, room.y - room.size/2, room.size);
+  rect(room.x - room.size/2, room.y - room.size/2, room.size, room.size);
 
   // Right Bridge
   rect(rightSideBridge.x, rightSideBridge.y, rightSideBridge.xSize, rightSideBridge.ySize);
@@ -149,11 +140,9 @@ function draw() {
   // Bottom Bridge
   rect(bottomSideBridge.x, bottomSideBridge.y, bottomSideBridge.xSize, bottomSideBridge.ySize);
 
-  // Player
-  player.display(); 
-  player.moveInsideRoom();
-  player.moveToBridge();
-  // player.moveInsideHorizontalBridge();
+  // Draw player
+  player.display();
+  player.move();
 }
 
 function windowResized() {
