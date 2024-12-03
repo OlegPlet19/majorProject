@@ -5,7 +5,6 @@
 // Extra for Experts:
 // - describe what you did to take this project "above and beyond"
 
-
 class Player {
   constructor(x, y, speed, size) {
     this.x = x;
@@ -33,7 +32,7 @@ class Player {
     }
 
     // Check if the new position is inside the room or bridges
-    if (this.isInsideRoom(newX, newY) || this.isOnBridge(newX, newY)) {
+    if (this.isInsideRoom(newX, newY) || this.isOnHorizontalBridge(newX, newY) || this.isOnVerticalBridge(newX, newY)) {
       this.x = newX;
       this.y = newY;
     }
@@ -48,18 +47,8 @@ class Player {
     );
   }
 
-  isOnBridge(x, y) {
-    return ( // Return t/f if player on bridge
-      // Right bridge
-      (x >= rightSideBridge.x - this.size &&   
-        x <= rightSideBridge.x + rightSideBridge.xSize + this.size &&
-        y >= rightSideBridge.y + this.size &&
-        y <= rightSideBridge.y + rightSideBridge.ySize - this.size) ||
-      // Left bridge
-      (x >= leftSideBridge.x - this.size &&
-        x <= leftSideBridge.x + leftSideBridge.xSize + this.size &&
-        y >= leftSideBridge.y + this.size &&
-        y <= leftSideBridge.y + leftSideBridge.ySize - this.size) ||
+  isOnHorizontalBridge(x, y) {
+    return ( // Return t/f if player on Horizontal bridge
       // Up bridge
       (x >= upSideBridge.x + this.size &&
         x <= upSideBridge.x + upSideBridge.xSize - this.size &&
@@ -73,9 +62,36 @@ class Player {
     );
   }
 
+  isOnVerticalBridge(x, y) {
+    return ( // Return t/f if player on Vertical bridge
+    //Right bridge
+      (x >= rightSideBridge.x - this.size &&   
+        x <= rightSideBridge.x + rightSideBridge.xSize + this.size &&
+        y >= rightSideBridge.y + this.size &&
+        y <= rightSideBridge.y + rightSideBridge.ySize - this.size) ||
+      // Left bridge
+      (x >= leftSideBridge.x - this.size &&
+        x <= leftSideBridge.x + leftSideBridge.xSize + this.size &&
+        y >= leftSideBridge.y + this.size &&
+        y <= leftSideBridge.y + leftSideBridge.ySize - this.size)
+    );
+  }
+
   display() {
     // Player
     circle(this.x, this.y, this.size * 2);
+  }
+}
+
+class Room {
+  constructor(x, y, size) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+  }
+
+  display() {
+    rect(this.x, this.y, this.size, this.size);
   }
 }
 
