@@ -31,55 +31,33 @@ class Player {
       newY += this.speed;
     }
 
-    // Check if the new position is inside the room or bridges
-    if (this.isInsideRoom(newX, newY) || this.isOnHorizontalBridge(newX, newY) || this.isOnVerticalBridge(newX, newY)) {
+    // Check if the new position is inside any room
+    let isInsideRoom = false;
+    for (let i = 0; i < rooms.length; i++) {
+      if (rooms[i].isInside(newX, newY, this.size)) {
+        isInsideRoom = true;
+        break;
+      }
+    }
+
+    // Check if the new position is inside any bridge
+    let isOnBridge = false;
+    for (let i = 0; i < bridges.length; i++) {
+      if (bridges[i].isOnBridge(newX, newY, this.size)) {
+        isOnBridge = true;
+        break;
+      }
+    }
+
+    // If the new position is inside a room or on a bridge, update the player's position
+    if (isInsideRoom || isOnBridge) {
       this.x = newX;
       this.y = newY;
     }
   }
 
-  isInsideRoom(x, y) {
-    return ( // Return t/f if player inside room
-      x >= room.x - room.size / 2 + this.size &&
-      x <= room.x + room.size / 2 - this.size &&
-      y >= room.y - room.size / 2 + this.size &&
-      y <= room.y + room.size / 2 - this.size
-    );
-  }
-
-  isOnHorizontalBridge(x, y) {
-    return ( // Return t/f if player on Horizontal bridge
-      // Up bridge
-      (x >= upSideBridge.x + this.size &&
-        x <= upSideBridge.x + upSideBridge.xSize - this.size &&
-        y >= upSideBridge.y - this.size &&
-        y <= upSideBridge.y + upSideBridge.ySize + this.size) ||
-      // Bottom bridge
-      (x >= bottomSideBridge.x + this.size &&
-        x <= bottomSideBridge.x + bottomSideBridge.xSize -  this.size &&
-        y >= bottomSideBridge.y - this.size &&
-        y <= bottomSideBridge.y + bottomSideBridge.ySize + this.size)
-    );
-  }
-
-  isOnVerticalBridge(x, y) {
-    return ( // Return t/f if player on Vertical bridge
-    //Right bridge
-      (x >= rightSideBridge.x - this.size &&   
-        x <= rightSideBridge.x + rightSideBridge.xSize + this.size &&
-        y >= rightSideBridge.y + this.size &&
-        y <= rightSideBridge.y + rightSideBridge.ySize - this.size) ||
-      // Left bridge
-      (x >= leftSideBridge.x - this.size &&
-        x <= leftSideBridge.x + leftSideBridge.xSize + this.size &&
-        y >= leftSideBridge.y + this.size &&
-        y <= leftSideBridge.y + leftSideBridge.ySize - this.size)
-    );
-  }
-
   display() {
-    // Player
-    circle(this.x, this.y, this.size * 2);
+    circle(this.x, this.y, this.size * 2); // Player
   }
 }
 
@@ -90,75 +68,150 @@ class Room {
     this.size = size;
   }
 
+  isInside(x, y) {
+    return (    
+      x >= this.x - this.size / 2 &&
+      x <= this.x + this.size / 2 &&
+      y >= this.y - this.size / 2 &&
+      y <= this.y + this.size / 2
+    );
+  }
+
   display() {
-    rect(this.x, this.y, this.size, this.size);
+    rect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
   }
 }
 
-// Main room
-let room = {
-  x: 1920 / 2,
-  y: 1080 / 2,
-  size: 200,
-} ;
+class Bridge {
+  constructor(x, y, xSize, ySize) {
+    this.x = x;
+    this.y = y;
+    this.xSize = xSize;
+    this.ySize = ySize;
+  }
 
-// Bridges
-let rightSideBridge = {
-  x : room.x + room.size / 2,
-  y : room.y - 50,
-  xSize : 300,
-  ySize : 100,
-  isOpen : false,
-} ;
+  isOnBridge(x, y) {
+    return (
+      x >= this.x &&
+      x <= this.x + this.xSize &&
+      y >= this.y &&
+      y <= this.y + this.ySize
+    );
+  }
 
-let leftSideBridge = {
-  x : room.x - room.size / 2 - 300,
-  y : room.y - 50,
-  xSize : 300,
-  ySize : 100,
-  isOpen : false,
-} ;
+  display() {
+    rect(this.x, this.y, this.xSize, this.ySize);
+  }
+}
 
-let upSideBridge = {
-  x : room.x - 50,
-  y : room.y - room.size / 2 - 300,
-  xSize : 100,
-  ySize : 300,
-  isOpen : false,
-} ;
-
-let bottomSideBridge = {
-  x : room.x - 50,
-  y : room.y + room.size / 2,
-  xSize : 100,
-  ySize : 300,
-  isOpen : false,
-} ;
-
-let player = new Player(room.x, room.y, 5, room.size/20);
+let rooms = [];
+let bridges = [];
+let player;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  generateLevel(8); // Generation of a level with what ever # of rooms you set here
+  player = new Player(rooms[0].x, rooms[0].y, 5, rooms[0].size / 20);
 }
 
 function draw() {
   background(220);
-  
-  // Main room
-  rect(room.x - room.size/2, room.y - room.size/2, room.size, room.size);
 
-  // Right Bridge
-  rect(rightSideBridge.x, rightSideBridge.y, rightSideBridge.xSize, rightSideBridge.ySize);
-  // Left Bridge
-  rect(leftSideBridge.x, leftSideBridge.y, leftSideBridge.xSize, leftSideBridge.ySize);
-  // Up Bridge
-  rect(upSideBridge.x, upSideBridge.y, upSideBridge.xSize, upSideBridge.ySize);
-  // Bottom Bridge
-  rect(bottomSideBridge.x, bottomSideBridge.y, bottomSideBridge.xSize, bottomSideBridge.ySize);
+  // Drawing room
+  for (let i = 0; i < rooms.length; i++) {
+    rooms[i].display();
+  }
 
-  // Draw player
+  // Drawing bridge
+  for (let i = 0; i < bridges.length; i++) {
+    bridges[i].display();
+  }
+
+  // Player
   player.display();
   player.move();
+}
+
+function generateLevel(numRooms) {
+  let roomSize = 200;
+  let bridgeSize = 100;
+  let distance = roomSize + bridgeSize; // Distance between rooms
+
+  // Central room
+  let centerX = width / 2;
+  let centerY = height / 2;
+  rooms.push(new Room(centerX, centerY, roomSize));
+
+  // Generating the remaining rooms
+  while (rooms.length < numRooms) {
+    let direction = random(["up", "down", "left", "right"]);
+    let baseRoom = random(rooms); // Selecting a random room for expansion
+    let x = baseRoom.x;
+    let y = baseRoom.y;
+
+    switch (direction) {
+      case "up":
+        y -= distance;
+        break;
+      case "down":
+        y += distance;
+        break;
+      case "left":
+        x -= distance;
+        break;
+      case "right":
+        x += distance;
+        break;
+    }
+
+    // if (direction === "up") {
+    //   y -= distance;
+    // } else if (direction === "down") {
+    //   y += distance;
+    // } else if (direction === "left") {
+    //   x -= distance;
+    // } else if (direction === "right") {
+    //   x += distance;
+    // }
+
+    // We check if there is already a room at these coordinates
+    let roomExists = false;
+
+    for (let i = 0; i < rooms.length; i++) {
+      if (rooms[i].x === x && rooms[i].y === y) {
+        roomExists = true;
+        break;
+      }
+    }
+
+    if (!roomExists) {
+      rooms.push(new Room(x, y, roomSize));
+    }
+  } 
+
+  // Bridge Generation
+  for (let i = 0; i < rooms.length; i++) {
+    for (let j = i + 1; j < rooms.length; j++) {
+      let roomA = rooms[i];
+      let roomB = rooms[j];
+
+      // Calculating distance between rooms
+      if (dist(roomA.x, roomA.y, roomB.x, roomB.y) === distance) {
+        // Adding a bridge between rooms
+        if (roomA.x === roomB.x) {
+          // Vertical bridge
+            // Creating bridges between rooms if their distance matches the specified one (be not perpendicular to line between rooms)
+          let bridgeY = min(roomA.y, roomB.y) + roomSize / 2;
+          bridges.push(new Bridge(roomA.x - bridgeSize / 2, bridgeY, bridgeSize, distance - roomSize));
+        } else if (roomA.y === roomB.y) {
+          // Horizontal bridge
+            //Creating bridges between rooms if their distance matches the specified one (be not perpendicular to line between rooms)
+          let bridgeX = min(roomA.x, roomB.x) + roomSize / 2;
+          bridges.push(new Bridge(bridgeX, roomA.y - bridgeSize / 2, distance - roomSize, bridgeSize));
+        }
+      }
+    }
+  }
 }
 
 function windowResized() {
