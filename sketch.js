@@ -70,10 +70,11 @@ class Room {
 
   isInside(x, y) {
     return (    
-      x >= this.x - this.size / 2 &&
-      x <= this.x + this.size / 2 &&
-      y >= this.y - this.size / 2 &&
-      y <= this.y + this.size / 2
+      // If player is going to be fully located in room or bridge it is not able to move outside of them
+      x >= this.x - this.size / 2 /* + player.size */ &&
+      x <= this.x + this.size / 2 /* - player.size */ &&
+      y >= this.y - this.size / 2 /* + player.size */ &&
+      y <= this.y + this.size / 2 /* - player.size */
     );
   }
 
@@ -110,7 +111,7 @@ let player;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  generateLevel(8); // Generation of a level with what ever # of rooms you set here
+  generateLevel(10); // Generation of a level with what ever # of rooms you set here
   player = new Player(rooms[0].x, rooms[0].y, 5, rooms[0].size / 20);
 }
 
@@ -130,6 +131,8 @@ function draw() {
   // Player
   player.display();
   player.move();
+
+  cameraFollow(player.x, player.y);
 }
 
 function generateLevel(numRooms) {
@@ -149,30 +152,18 @@ function generateLevel(numRooms) {
     let x = baseRoom.x;
     let y = baseRoom.y;
 
-    switch (direction) {
-      case "up":
-        y -= distance;
-        break;
-      case "down":
-        y += distance;
-        break;
-      case "left":
-        x -= distance;
-        break;
-      case "right":
-        x += distance;
-        break;
+    if (direction === "up") {
+      y -= distance;
+    } 
+    else if (direction === "down") {
+      y += distance;
+    } 
+    else if (direction === "left") {
+      x -= distance;
+    } 
+    else if (direction === "right") {
+      x += distance;
     }
-
-    // if (direction === "up") {
-    //   y -= distance;
-    // } else if (direction === "down") {
-    //   y += distance;
-    // } else if (direction === "left") {
-    //   x -= distance;
-    // } else if (direction === "right") {
-    //   x += distance;
-    // }
 
     // We check if there is already a room at these coordinates
     let roomExists = false;
@@ -220,5 +211,24 @@ function windowResized() {
   }
   else {
     resizeCanvas(windowHeight, windowHeight);
+  }
+}
+
+function cameraFollow(x, y) {
+  if (x > windowWidth) {
+    // Move level to the left
+    console.log("Camera follow player x > windowWidth");
+  }
+  if (x < 0) {
+    // Move level to the right 
+    console.log("Camera follow player x < windowWidth");
+  }
+  if (y > windowHeight) {
+    // Move level up 
+    console.log("Camera follow player y > windowHeight");
+  }
+  if (y < 0) {
+    // Move level down
+    console.log("Camera follow player y < windowHeight");
   }
 }
