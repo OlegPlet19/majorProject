@@ -143,9 +143,10 @@ function draw() {
 }
 
 function generateLevel(numRooms) {
-  let roomSize = 500;
-  let bridgeSize = 200;
-  let distance = roomSize + bridgeSize * 3; // Distance between rooms
+  let roomSize = 100;
+  let bridgeSize = 50;
+  let distance = roomSize + bridgeSize; // Distance between rooms
+  let isOpen = false;
 
   // Central room
   let centerX = width / 2;
@@ -177,7 +178,7 @@ function generateLevel(numRooms) {
 
     for (let i = 0; i < rooms.length; i++) {
       if (rooms[i].x === x && rooms[i].y === y) {
-        roomExists = true;
+        roomExists = true; 
         break;
       }
     }
@@ -198,12 +199,13 @@ function generateLevel(numRooms) {
         // Adding a bridge between rooms
         if (roomA.x === roomB.x) {
           // Vertical bridge
-            // Creating bridges between rooms if their distance matches the specified one (be not perpendicular to line between rooms)
+          // Creating bridges between rooms if their distance matches the specified one (be not perpendicular to line between rooms)
           let bridgeY = min(roomA.y, roomB.y) + roomSize / 2;
           bridges.push(new Bridge(roomA.x - bridgeSize / 2, bridgeY, bridgeSize, distance - roomSize));
-        } else if (roomA.y === roomB.y) {
+        } 
+        else if (roomA.y === roomB.y) {
           // Horizontal bridge
-            //Creating bridges between rooms if their distance matches the specified one (be not perpendicular to line between rooms)
+          //Creating bridges between rooms if their distance matches the specified one (be not perpendicular to line between rooms)
           let bridgeX = min(roomA.x, roomB.x) + roomSize / 2;
           bridges.push(new Bridge(bridgeX, roomA.y - bridgeSize / 2, distance - roomSize, bridgeSize));
         }
@@ -222,17 +224,20 @@ function windowResized() {
 }
 
 function cameraFollow() {
-  // Change (+- player.size * #) to change offset
-  if (player.x + offsetX > width - player.size * 5) {
+  // Magnitude to center number
+  let magnitudeOfPlayerHorizontalOffset = width/player.size/2; 
+  let magnitudeOfPlayerVerticalOffset = height/player.size/2;
+
+  if (player.x + offsetX > width - player.size * magnitudeOfPlayerHorizontalOffset) {
     offsetX -= player.speed;
   }
-  if (player.x + offsetX < 0 + player.size * 5) {
+  if (player.x + offsetX < 0 + player.size * magnitudeOfPlayerHorizontalOffset) {
     offsetX += player.speed;
   }
-  if (player.y + offsetY > height - player.size * 5) {
+  if (player.y + offsetY > height - player.size * magnitudeOfPlayerVerticalOffset) {
     offsetY -= player.speed;
   }
-  if (player.y + offsetY < 0 + player.size * 5) {
+  if (player.y + offsetY < 0 + player.size * magnitudeOfPlayerVerticalOffset) {
     offsetY += player.speed;
   }
 }
