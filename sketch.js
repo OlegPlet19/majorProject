@@ -57,7 +57,7 @@ class Player {
   }
 
   display() {
-    circle(this.x, this.y, this.size * 2); // Player
+    circle(this.x + offsetX, this.y + offsetY, this.size * 2); // Player
   }
 }
 
@@ -79,8 +79,13 @@ class Room {
   }
 
   display() {
-    rect(this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
-  }
+    rect(
+      this.x - this.size / 2 + offsetX,
+      this.y - this.size / 2 + offsetY,
+      this.size,
+      this.size
+    ); // Room
+  }  
 }
 
 class Bridge {
@@ -101,18 +106,20 @@ class Bridge {
   }
 
   display() {
-    rect(this.x, this.y, this.xSize, this.ySize);
+    rect(this.x + offsetX, this.y + offsetY, this.xSize, this.ySize); // Bridge
   }
 }
 
 let rooms = [];
 let bridges = [];
 let player;
+let offsetX = 0;
+let offsetY = 0;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   generateLevel(10); // Generation of a level with what ever # of rooms you set here
-  player = new Player(rooms[0].x, rooms[0].y, 5, rooms[0].size / 20);
+  player = new Player(rooms[0].x, rooms[0].y, 10, rooms[0].size / 20);
 }
 
 function draw() {
@@ -132,13 +139,13 @@ function draw() {
   player.display();
   player.move();
 
-  cameraFollow(player.x, player.y);
+  cameraFollow();
 }
 
 function generateLevel(numRooms) {
-  let roomSize = 200;
-  let bridgeSize = 100;
-  let distance = roomSize + bridgeSize; // Distance between rooms
+  let roomSize = 500;
+  let bridgeSize = 200;
+  let distance = roomSize + bridgeSize * 3; // Distance between rooms
 
   // Central room
   let centerX = width / 2;
@@ -214,21 +221,18 @@ function windowResized() {
   }
 }
 
-function cameraFollow(x, y) {
-  if (x > windowWidth) {
-    // Move level to the left
-    console.log("Camera follow player x > windowWidth");
+function cameraFollow() {
+  // Change (+- player.size * #) to change offset
+  if (player.x + offsetX > width - player.size * 5) {
+    offsetX -= player.speed;
   }
-  if (x < 0) {
-    // Move level to the right 
-    console.log("Camera follow player x < windowWidth");
+  if (player.x + offsetX < 0 + player.size * 5) {
+    offsetX += player.speed;
   }
-  if (y > windowHeight) {
-    // Move level up 
-    console.log("Camera follow player y > windowHeight");
+  if (player.y + offsetY > height - player.size * 5) {
+    offsetY -= player.speed;
   }
-  if (y < 0) {
-    // Move level down
-    console.log("Camera follow player y < windowHeight");
+  if (player.y + offsetY < 0 + player.size * 5) {
+    offsetY += player.speed;
   }
 }
