@@ -12,6 +12,7 @@ class Player {
     this.speed = speed;
     this.image = null;
     this.size = size;
+    this.visitedRoom = false;
   }
 
   move() {
@@ -80,10 +81,14 @@ class Room {
   }
 
   display() {
-    if (this.isOpen) {
-      fill(200);
-    } else {
-      fill(100);
+    if (this.visitedRoom && this.isOpen) {
+      fill(0, 255, 0); // green for open
+    }
+    else if (this.isOpen) {
+      fill(250, 0, 0); // red for not visited rooms
+    }
+    else {
+      fill(100); // dark grey for not opened
     }
 
     rect(
@@ -132,6 +137,7 @@ function setup() {
   generateLevel(10); // Generation of a level with what ever # of rooms you set here
   player = new Player(rooms[0].x, rooms[0].y, 10, rooms[0].size / 20);
   rooms[0].isOpen = true; // Central room becomes open
+  rooms[0].visitedRoom = true;
   activateInitialRooms(); // Making neuighbouring rooms connected
 }
 
@@ -240,6 +246,7 @@ function keyPressed() {
     for (let room of rooms) {
       if (room.isOpen && room.isInside(player.x, player.y)) {
         activateConnectedRoomsAndBridges(room);
+        room.visitedRoom = true;
         break;
       }
     }
