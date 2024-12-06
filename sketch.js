@@ -33,8 +33,8 @@ class Player {
 
     // Check if the new position is inside any room
     let isInsideRoom = false;
-    for (let i = 0; i < rooms.length; i++) {
-      if (rooms[i].isInside(newX, newY, this.size)) {
+    for (let room of rooms) {
+      if (room.isOpen && room.isInside(newX, newY)) {
         isInsideRoom = true;
         break;
       }
@@ -42,8 +42,8 @@ class Player {
 
     // Check if the new position is inside any bridge
     let isOnBridge = false;
-    for (let i = 0; i < bridges.length; i++) {
-      if (bridges[i].isOnBridge(newX, newY, this.size)) {
+    for (let bridge of bridges) {
+      if (bridge.isActive && bridge.isOnBridge(newX, newY)) {
         isOnBridge = true;
         break;
       }
@@ -66,19 +66,26 @@ class Room {
     this.x = x;
     this.y = y;
     this.size = size;
+    this.isOpen = false;
   }
 
   isInside(x, y) {
     return (    
       // If player is going to be fully located in room or bridge it is not able to move outside of them
-      x >= this.x - this.size / 2 /* + player.size */ &&
-      x <= this.x + this.size / 2 /* - player.size */ &&
-      y >= this.y - this.size / 2 /* + player.size */ &&
-      y <= this.y + this.size / 2 /* - player.size */
+      x >= this.x - this.size / 2 &&
+      x <= this.x + this.size / 2 &&
+      y >= this.y - this.size / 2 &&
+      y <= this.y + this.size / 2
     );
   }
 
   display() {
+    if (this.isOpen) {
+      fill(200);
+    } else {
+      fill(100);
+    }
+
     rect(
       this.x - this.size / 2 + offsetX,
       this.y - this.size / 2 + offsetY,
@@ -94,6 +101,7 @@ class Bridge {
     this.y = y;
     this.xSize = xSize;
     this.ySize = ySize;
+    this.isActive = false;
   }
 
   isOnBridge(x, y) {
@@ -106,7 +114,10 @@ class Bridge {
   }
 
   display() {
-    rect(this.x + offsetX, this.y + offsetY, this.xSize, this.ySize); // Bridge
+    if (this.isActive) {
+      fill(180);
+      rect(this.x + offsetX, this.y + offsetY, this.xSize, this.ySize); // Bridge
+    }
   }
 }
 
@@ -120,6 +131,8 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   generateLevel(10); // Generation of a level with what ever # of rooms you set here
   player = new Player(rooms[0].x, rooms[0].y, 10, rooms[0].size / 20);
+  rooms[0].isOpen = true; // Central room becomes open
+  activateInitialRooms(); // Making neuighbouring rooms connected
 }
 
 function draw() {
@@ -146,7 +159,6 @@ function generateLevel(numRooms) {
   let roomSize = 100;
   let bridgeSize = 50;
   let distance = roomSize + bridgeSize; // Distance between rooms
-  let isOpen = false;
 
   // Central room
   let centerX = width / 2;
@@ -220,6 +232,49 @@ function windowResized() {
   }
   else {
     resizeCanvas(windowHeight, windowHeight);
+  }
+}
+
+function keyPressed() {
+  if (keyCode === 32) { // Spacebar
+    for (let room of rooms) {
+      if (room.isOpen && room.isInside(player.x, player.y)) {
+        activateConnectedRoomsAndBridges(room);
+        break;
+      }
+    }
+  }
+}
+
+function activateConnectedRoomsAndBridges(room) {
+  for (let bridge of bridges) {
+    if (dist(room.x, room.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < room.size) {
+      bridge.isActive = true;
+
+      for (let otherRoom of rooms) {
+        if (dist(otherRoom.x, otherRoom.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < room.size) {
+          otherRoom.isOpen = true;
+        }
+      }
+    }
+  }
+}
+
+function activateInitialRooms() {
+  const centralRoom = rooms[0]; // Central room
+  
+  for (let bridge of bridges) {
+    // If the bridge is connected to the central passage
+    if (dist(centralRoom.x, centralRoom.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < centralRoom.size) {
+      bridge.isActive = true; // Activating the bridge
+
+      for (let room of rooms) {
+        // If the room is connected to an activated bridge
+        if (dist(room.x, room.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < centralRoom.size) {
+          room.isOpen = true; // Making the room accessible
+        }
+      }
+    }
   }
 }
 
