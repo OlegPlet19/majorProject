@@ -32,7 +32,28 @@ class Player {
       newY += this.speed;
     }
 
+    let inTrapRoom = false;
+    let currentRoom = null;
+    
     // Check if the new position is inside any room
+    for (let room of rooms) {
+      if (room.isInside(this.x, this.y)) {
+        currentRoom = room;
+        if (room.isOpen && !room.visitedRoom) {
+          inTrapRoom = true;
+        }
+        break;
+      }
+    }
+  
+    // If the player is in the trap room, we do not allow him to leave it
+    if (inTrapRoom && currentRoom) {
+      if (!currentRoom.isInside(newX, newY)) {
+        return; // The player cannot leave the trap room
+      }
+    }
+  
+    // Checking if the new position is inside any open room or active bridge
     let isInsideRoom = false;
     for (let room of rooms) {
       if (room.isOpen && room.isInside(newX, newY)) {
