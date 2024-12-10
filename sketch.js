@@ -318,21 +318,8 @@ function activateInitialRooms() {
   }
 }
 
-function cameraFollow() {
-  // Magnitude to center number
-  let magnitudeOfPlayerHorizontalOffset = width/player.size/2; 
-  let magnitudeOfPlayerVerticalOffset = height/player.size/2;
-
-  if (player.x + offsetX > width - player.size * magnitudeOfPlayerHorizontalOffset) {
-    offsetX -= player.speed;
-  }
-  if (player.x + offsetX < 0 + player.size * magnitudeOfPlayerHorizontalOffset) {
-    offsetX += player.speed;
-  }
-  if (player.y + offsetY > height - player.size * magnitudeOfPlayerVerticalOffset) {
-    offsetY -= player.speed;
-  }
-  if (player.y + offsetY < 0 + player.size * magnitudeOfPlayerVerticalOffset) {
-    offsetY += player.speed;
-  }
+function cameraFollow() {  
+  // lerp (start, stop, amt)
+  offsetX = lerp(offsetX, width / 2 - player.x, 0.1);
+  offsetY = lerp(offsetY, height / 2 - player.y, 0.1);
 }
