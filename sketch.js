@@ -84,11 +84,13 @@ class Player {
 }
 
 class Room {
-  constructor(x, y, size) {
+  constructor(x, y, size, type = "main") {
     this.x = x;
     this.y = y;
     this.size = size;
     this.isOpen = false;
+    this.visitedRoom = false;
+    this.type = type; // Added room type
   }
 
   isInside(x, y) {
@@ -102,14 +104,21 @@ class Room {
   }
 
   display() {
-    if (this.visitedRoom && this.isOpen) {
-      fill(0, 255, 0); // green for open
-    }
-    else if (this.isOpen) {
-      fill(250, 0, 0); // red for not visited rooms
-    }
-    else {
-      fill(100); // dark grey for not opened
+    const typeColors = {
+      main: "green",
+      fight: "red",
+      shop: "yellow",
+      bonus: "orange",
+      boss: "purple",
+      portal: "blue",
+    };
+
+    if (this.visitedRoom) {
+      fill(0, 255, 0); // Green for visited rooms
+    } else if (this.isOpen) {
+      fill(typeColors[this.type] || "white"); // Color based on room type
+    } else {
+      fill(100); // Grey for unopened rooms
     }
 
     rect(
@@ -159,7 +168,8 @@ function setup() {
   player = new Player(rooms[0].x, rooms[0].y, 10, rooms[0].size / 20);
   rooms[0].isOpen = true; // Central room becomes open
   rooms[0].visitedRoom = true;
-  activateInitialRooms(); // Making neuighbouring rooms connected
+  rooms[0].type = "main";
+  activateInitialRooms(); // Making neighboring rooms connected
 }
 
 function draw() {
@@ -187,14 +197,17 @@ function generateLevel(numRooms) {
   let bridgeSize = 50;
   let distance = roomSize + bridgeSize; // Distance between rooms
 
+  let roomTypes = ["main", "fight", "shop", "bonus", "boss", "portal"];
+
   // Central room
   let centerX = width / 2;
   let centerY = height / 2;
-  rooms.push(new Room(centerX, centerY, roomSize));
+  rooms.push(new Room(centerX, centerY, roomSize, "main")); // Central room — main
 
   // Generating the remaining rooms
   while (rooms.length < numRooms) {
     let direction = random(["up", "down", "left", "right"]);
+    let type = random(roomTypes); // Random type for new room
     let baseRoom = random(rooms); // Selecting a random room for expansion
     let x = baseRoom.x;
     let y = baseRoom.y;
@@ -214,16 +227,15 @@ function generateLevel(numRooms) {
 
     // We check if there is already a room at these coordinates
     let roomExists = false;
-
-    for (let i = 0; i < rooms.length; i++) {
-      if (rooms[i].x === x && rooms[i].y === y) {
-        roomExists = true; 
+    for (let room of rooms) {
+      if (room.x === x && room.y === y) {
+        roomExists = true;
         break;
       }
     }
 
     if (!roomExists) {
-      rooms.push(new Room(x, y, roomSize));
+      rooms.push(new Room(x, y, roomSize, type)); // Assign type to new room
     }
   } 
 
