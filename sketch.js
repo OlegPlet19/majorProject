@@ -114,10 +114,14 @@ class Room {
     };
 
     if (this.visitedRoom) {
-      fill(0, 255, 0); // Green for visited rooms
-    } else if (this.isOpen) {
+      let baseColor = color(typeColors[this.type] || "white"); // Getting the base color
+      let alpha = 75; // Alpha level
+      fill(red(baseColor), green(baseColor), blue(baseColor), alpha); // Apply color with alpha
+    } 
+    else if (this.isOpen) {
       fill(typeColors[this.type] || "white"); // Color based on room type
-    } else {
+    } 
+    else {
       fill(100); // Grey for unopened rooms
     }
 
@@ -320,6 +324,6 @@ function activateInitialRooms() {
 
 function cameraFollow() {  
   // lerp (start, stop, amt)
-  offsetX = lerp(offsetX, width / 2 - player.x, 0.1);
-  offsetY = lerp(offsetY, height / 2 - player.y, 0.1);
+  offsetX = lerp(offsetX, width / 2 - player.x, 0.05);
+  offsetY = lerp(offsetY, height / 2 - player.y, 0.05);
 }
