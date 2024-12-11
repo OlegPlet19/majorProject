@@ -201,7 +201,26 @@ function generateLevel(numRooms) {
   let bridgeSize = 50;
   let distance = roomSize + bridgeSize; // Distance between rooms
 
+  // Determine the types of rooms and their maximum number
   let roomTypes = ["main", "fight", "shop", "bonus", "boss", "portal"];
+
+  let maxRoomsByType = {
+    main: 1,
+    fight: 3,
+    shop: 2,
+    bonus: 2,
+    boss: 1,
+    portal: 1,
+  };
+
+  let roomCounts = {
+    main: 1, // Central Room
+    fight: 0,
+    shop: 0,
+    bonus: 0,
+    boss: 0,
+    portal: 0,
+  };
 
   // Central room
   let centerX = width / 2;
@@ -212,34 +231,45 @@ function generateLevel(numRooms) {
   while (rooms.length < numRooms) {
     let direction = random(["up", "down", "left", "right"]);
     let type = random(roomTypes); // Random type for new room
-    let baseRoom = random(rooms); // Selecting a random room for expansion
-    let x = baseRoom.x;
-    let y = baseRoom.y;
 
-    if (direction === "up") {
-      y -= distance;
-    } 
-    else if (direction === "down") {
-      y += distance;
-    } 
-    else if (direction === "left") {
-      x -= distance;
-    } 
-    else if (direction === "right") {
-      x += distance;
-    }
+    // Check if the number of rooms of this type is less than the maximum
+    if (roomCounts[type] < maxRoomsByType[type]) {
+      // If the room type has not yet been exhausted, continue creating the room
+      let baseRoom = random(rooms); // Selecting a random room for expansion
+      let x = baseRoom.x;
+      let y = baseRoom.y;
 
-    // We check if there is already a room at these coordinates
-    let roomExists = false;
-    for (let room of rooms) {
-      if (room.x === x && room.y === y) {
-        roomExists = true;
-        break;
+      if (direction === "up") {
+        y -= distance;
+      } 
+      else if (direction === "down") {
+        y += distance;
+      } 
+      else if (direction === "left") {
+        x -= distance;
+      } 
+      else if (direction === "right") {
+        x += distance;
       }
-    }
 
-    if (!roomExists) {
-      rooms.push(new Room(x, y, roomSize, type)); // Assign type to new room
+      // We check if there is already a room at these coordinates
+      let roomExists = false;
+      for (let room of rooms) {
+        if (room.x === x && room.y === y) {
+          roomExists = true;
+          break;
+        }
+      }
+
+      if (!roomExists) {
+        rooms.push(new Room(x, y, roomSize, type)); // Assign type to new room
+        roomCounts[type]++; // Increase the counter for this type
+      }
+
+    } 
+    else {
+      // If the limit of rooms of this type is reached, select a new type
+      type = random(roomTypes); // Repeat the type selection
     }
   } 
 
