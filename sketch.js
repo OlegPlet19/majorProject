@@ -12,7 +12,7 @@ class Player {
     this.speed = speed;
     this.image = null;
     this.size = size;
-    this.visitedRoom = false;
+    this.visitedRooms = [];
   }
 
   move() {
@@ -31,11 +31,19 @@ class Player {
     if (keyIsDown(83)) { // Down
       newY += this.speed;
     }
-
+    
     let inTrapRoom = false;
     let currentRoom = null;
     
     // Check if the new position is inside any room
+    for (let room of rooms) {
+      if (room.isInside(newX, newY)) {
+        currentRoom = room;
+        break;
+      }
+    }
+
+
     for (let room of rooms) {
       if (room.isInside(this.x, this.y)) {
         currentRoom = room;
@@ -45,14 +53,20 @@ class Player {
         break;
       }
     }
-  
+
     // If the player is in the trap room, we do not allow him to leave it
     if (inTrapRoom && currentRoom) {
       if (!currentRoom.isInside(newX, newY)) {
         return; // The player cannot leave the trap room
       }
     }
-  
+    
+    // If the player enters an unknown room, assign its type and mark it as visited
+    if (currentRoom && currentRoom.isOpen && !currentRoom.visitedRoom) {
+      currentRoom.assignType(); // Assign type as soon as the player enters a room
+      currentRoom.isOpen = true; // Ensure the room is marked as open
+    }
+
     // Checking if the new position is inside any open room or active bridge
     let isInsideRoom = false;
     for (let room of rooms) {
@@ -84,13 +98,44 @@ class Player {
 }
 
 class Room {
-  constructor(x, y, size, type = "main") {
+  constructor(x, y, size, type = null) {
     this.x = x;
     this.y = y;
     this.size = size;
     this.isOpen = false;
     this.visitedRoom = false;
-    this.type = type; // Added room type
+    this.type = type;
+  }
+
+  // This function will be called when a player enters a room to assign its type
+  assignType() {
+    if (!this.type) {
+      let roomTypes = ["fight", "shop", "bonus", "trap", "boss", "portal"];
+      if (roomCounts["fight"] < maxRoomsByType["fight"]) {
+        this.type = "fight";
+        roomCounts["fight"]++;
+      } 
+      else if (roomCounts["shop"] < maxRoomsByType["shop"]) {
+        this.type = "shop";
+        roomCounts["shop"]++;
+      } 
+      else if (roomCounts["bonus"] < maxRoomsByType["bonus"]) {
+        this.type = "bonus";
+        roomCounts["bonus"]++;
+      } 
+      else if (roomCounts["trap"] < maxRoomsByType["trap"]) {
+        this.type = "trap";
+        roomCounts["trap"]++;
+      } 
+      else if (roomCounts["boss"] === 0) {
+        this.type = "boss";
+        roomCounts["boss"]++;
+      } 
+      else if (roomCounts["portal"] === 0) {
+        this.type = "portal";
+        roomCounts["portal"]++;
+      }
+    }
   }
 
   isInside(x, y) {
@@ -124,7 +169,6 @@ class Room {
     else {
       fill(100); // Grey for unopened rooms
     }
-
     rect(
       this.x - this.size / 2 + offsetX,
       this.y - this.size / 2 + offsetY,
@@ -166,6 +210,23 @@ let player;
 let offsetX = 0;
 let offsetY = 0;
 
+const roomCounts = {
+  fight: 0,
+  shop: 0,
+  bonus: 0,
+  boss: 0,
+  portal: 0,
+  main: 1,
+};
+
+const maxRoomsByType = {
+  fight: 3,
+  shop: 2,
+  bonus: 2,
+  boss: 1,
+  portal: 1,
+};
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   generateLevel(10); // Generation of a level with what ever # of rooms you set here
@@ -201,75 +262,41 @@ function generateLevel(numRooms) {
   let bridgeSize = 50;
   let distance = roomSize + bridgeSize; // Distance between rooms
 
-  // Determine the types of rooms and their maximum number
-  let roomTypes = ["main", "fight", "shop", "bonus", "boss", "portal"];
-
-  let maxRoomsByType = {
-    main: 1,
-    fight: 3,
-    shop: 2,
-    bonus: 2,
-    boss: 1,
-    portal: 1,
-  };
-
-  let roomCounts = {
-    main: 1, // Central Room
-    fight: 0,
-    shop: 0,
-    bonus: 0,
-    boss: 0,
-    portal: 0,
-  };
-
-  // Central room
   let centerX = width / 2;
   let centerY = height / 2;
   rooms.push(new Room(centerX, centerY, roomSize, "main")); // Central room — main
 
-  // Generating the remaining rooms
+
   while (rooms.length < numRooms) {
     let direction = random(["up", "down", "left", "right"]);
-    let type = random(roomTypes); // Random type for new room
 
-    // Check if the number of rooms of this type is less than the maximum
-    if (roomCounts[type] < maxRoomsByType[type]) {
-      // If the room type has not yet been exhausted, continue creating the room
-      let baseRoom = random(rooms); // Selecting a random room for expansion
-      let x = baseRoom.x;
-      let y = baseRoom.y;
+    let baseRoom = random(rooms);
+    let x = baseRoom.x;
+    let y = baseRoom.y;
 
-      if (direction === "up") {
-        y -= distance;
-      } 
-      else if (direction === "down") {
-        y += distance;
-      } 
-      else if (direction === "left") {
-        x -= distance;
-      } 
-      else if (direction === "right") {
-        x += distance;
-      }
-
-      // We check if there is already a room at these coordinates
-      let roomExists = false;
-      for (let room of rooms) {
-        if (room.x === x && room.y === y) {
-          roomExists = true;
-          break;
-        }
-      }
-
-      if (!roomExists) {
-        rooms.push(new Room(x, y, roomSize, type)); // Assign type to new room
-        roomCounts[type]++; // Increase the counter for this type
-      }
-
+    if (direction === "up") {
+      y -= distance;
     } 
-    else {
-      // If the limit of rooms of this type is reached, select a new type
-      type = random(roomTypes); // Repeat the type selection
+    else if (direction === "down") {
+      y += distance;
+    } 
+    else if (direction === "left") {
+      x -= distance;
+    } 
+    else if (direction === "right") {
+      x += distance;
+    } 
+
+    let roomExists = false;
+    for (let room of rooms) {
+      if (room.x === x && room.y === y) {
+        roomExists = true;
+        break;
+      }
+    }
+
+    if (!roomExists) {
+      rooms.push(new Room(x, y, roomSize));
     }
   } 
 
@@ -312,8 +339,9 @@ function keyPressed() {
   if (keyCode === 32) { // Spacebar
     for (let room of rooms) {
       if (room.isOpen && room.isInside(player.x, player.y)) {
-        activateConnectedRoomsAndBridges(room);
+        room.assignType(); // We assign a type upon entering the room
         room.visitedRoom = true;
+        activateConnectedRoomsAndBridges(room);
         break;
       }
     }
@@ -324,7 +352,6 @@ function activateConnectedRoomsAndBridges(room) {
   for (let bridge of bridges) {
     if (dist(room.x, room.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < room.size) {
       bridge.isActive = true;
-
       for (let otherRoom of rooms) {
         if (dist(otherRoom.x, otherRoom.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < room.size) {
           otherRoom.isOpen = true;
@@ -336,12 +363,10 @@ function activateConnectedRoomsAndBridges(room) {
 
 function activateInitialRooms() {
   const centralRoom = rooms[0]; // Central room
-  
   for (let bridge of bridges) {
     // If the bridge is connected to the central passage
     if (dist(centralRoom.x, centralRoom.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < centralRoom.size) {
       bridge.isActive = true; // Activating the bridge
-
       for (let room of rooms) {
         // If the room is connected to an activated bridge
         if (dist(room.x, room.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < centralRoom.size) {
