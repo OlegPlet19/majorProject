@@ -110,30 +110,31 @@ class Room {
   // This function will be called when a player enters a room to assign its type
   assignType() {
     if (!this.type) {
-      let roomTypes = ["fight", "shop", "bonus", "trap", "boss", "portal"];
+      let availableTypes = [];
+      // We add available room types if their limit is not exhausted
       if (roomCounts["fight"] < maxRoomsByType["fight"]) {
-        this.type = "fight";
-        roomCounts["fight"]++;
-      } 
-      else if (roomCounts["shop"] < maxRoomsByType["shop"]) {
-        this.type = "shop";
-        roomCounts["shop"]++;
-      } 
-      else if (roomCounts["bonus"] < maxRoomsByType["bonus"]) {
-        this.type = "bonus";
-        roomCounts["bonus"]++;
-      } 
-      else if (roomCounts["trap"] < maxRoomsByType["trap"]) {
-        this.type = "trap";
-        roomCounts["trap"]++;
-      } 
-      else if (roomCounts["boss"] === 0) {
-        this.type = "boss";
-        roomCounts["boss"]++;
-      } 
-      else if (roomCounts["portal"] === 0) {
-        this.type = "portal";
-        roomCounts["portal"]++;
+        availableTypes.push("fight");
+      }
+      if (roomCounts["shop"] < maxRoomsByType["shop"]) {
+        availableTypes.push("shop");
+      }
+      if (roomCounts["bonus"] < maxRoomsByType["bonus"]) {
+        availableTypes.push("bonus");
+      }
+  
+      // If only boss and portal are available, select them
+      if (availableTypes.length === 0) {
+        if (roomCounts["boss"] === 0) {
+          this.type = "boss";
+          roomCounts["boss"]++;
+        } else if (roomCounts["portal"] === 0) {
+          this.type = "portal";
+          roomCounts["portal"]++;
+        }
+      } else {
+        // Randomly select one of the available types
+        this.type = random(availableTypes);
+        roomCounts[this.type]++;
       }
     }
   }
