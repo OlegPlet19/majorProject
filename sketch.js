@@ -114,24 +114,35 @@ class Room {
       // We add available room types if their limit is not exhausted
       if (roomCounts["fight"] < maxRoomsByType["fight"]) {
         availableTypes.push("fight");
+        fightLevel();
       }
       if (roomCounts["shop"] < maxRoomsByType["shop"]) {
         availableTypes.push("shop");
+        shopLevel();
       }
       if (roomCounts["bonus"] < maxRoomsByType["bonus"]) {
         availableTypes.push("bonus");
+        bonusLevel();
       }
-  
+      if (roomCounts["statue"] < maxRoomsByType["statue"]) {
+        availableTypes.push("statue");
+        statueLevel();
+      }
+      
       // If only boss and portal are available, select them
       if (availableTypes.length === 0) {
         if (roomCounts["boss"] === 0) {
           this.type = "boss";
           roomCounts["boss"]++;
-        } else if (roomCounts["portal"] === 0) {
+          bossLevel();
+        } 
+        else if (roomCounts["portal"] === 0) {
           this.type = "portal";
           roomCounts["portal"]++;
+          portalLevel();  
         }
-      } else {
+      } 
+      else {
         // Randomly select one of the available types
         this.type = random(availableTypes);
         roomCounts[this.type]++;
@@ -157,6 +168,7 @@ class Room {
       bonus: "orange",
       boss: "purple",
       portal: "blue",
+      statue: "pink"
     };
 
     if (this.visitedRoom) {
@@ -218,19 +230,21 @@ const roomCounts = {
   boss: 0,
   portal: 0,
   main: 1,
+  statue : 0,
 };
 
 const maxRoomsByType = {
   fight: 3,
-  shop: 2,
-  bonus: 2,
+  shop: 1,
+  bonus: 1,
   boss: 1,
   portal: 1,
+  statue : 1,
 };
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  generateLevel(10); // Generation of a level with what ever # of rooms you set here
+  generateLevel(9); // Generation of a level with what ever # of rooms you set here
   player = new Player(rooms[0].x, rooms[0].y, 10, rooms[0].size / 20);
   rooms[0].isOpen = true; // Central room becomes open
   rooms[0].visitedRoom = true;
@@ -343,7 +357,12 @@ function keyPressed() {
         room.assignType(); // We assign a type upon entering the room
         room.visitedRoom = true;
         activateConnectedRoomsAndBridges(room);
-        break;
+        if (room.type === "portal") {
+          location.reload();
+        } 
+        else {
+          break;
+        }
       }
     }
   }
@@ -382,4 +401,36 @@ function cameraFollow() {
   // lerp (start, stop, amt)
   offsetX = lerp(offsetX, width / 2 - player.x, 0.05);
   offsetY = lerp(offsetY, height / 2 - player.y, 0.05);
+}
+
+function fightLevel() {
+  console.log("Fight level spawned!" + roomCounts["fight"]);
+  // Spawn enemies
+}
+
+function bonusLevel() {
+  console.log("Bonus level spawned!" + roomCounts["bonus"]);
+  // Spawn square in the center of the room that represents chest
+  // if player next to this square - 'press "E" to interct with chest'
+}
+
+function shopLevel() {
+  console.log("Shop level spawned!" + roomCounts["shop"]);
+  // Spawn square in the center of the room that represents trading post
+}
+
+function bossLevel() {
+  console.log(" ");
+  console.log("Boss level spawned!" + roomCounts["boss"]);
+  // Spawn Boss
+}
+
+function portalLevel() {
+  console.log("Portal level spawned!" + roomCounts["portal"]);
+  // Move player to the next level
+}
+
+function statueLevel() {
+  console.log("Statue level spawned!" + roomCounts["statue"]);
+  // Spawn square in the center of the room that represents statue
 }
