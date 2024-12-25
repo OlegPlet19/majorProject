@@ -147,8 +147,30 @@ class Room {
         this.type = random(availableTypes);
         roomCounts[this.type]++;
       }
+
+      if (this.type === "statue") {
+        // Make the room visited, if it's a statue
+        this.visitedRoom = true;
+
+        for (let bridge of bridges) {
+          if (dist(this.x, this.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < this.size) {
+            bridge.isActive = true;
+  
+            // Making adjacent rooms open
+            for (let otherRoom of rooms) {
+              if (dist(otherRoom.x, otherRoom.y, bridge.x + bridge.xSize / 2, bridge.y + bridge.ySize / 2) < this.size) {
+                otherRoom.isOpen = true;
+              }
+            }
+          }
+        }
+      }
+  
+      // Displaying the room type in the console
+      console.log(`Assigned room type: ${this.type}`);
     }
   }
+  
 
   isInside(x, y) {
     return (    
@@ -222,6 +244,7 @@ let bridges = [];
 let player;
 let offsetX = 0;
 let offsetY = 0;
+let statueActivated = true;
 
 const roomCounts = {
   fight: 0,
@@ -268,6 +291,8 @@ function draw() {
   // Player
   player.display();
   player.move();
+
+  statueLevel();
 
   cameraFollow();
 }
@@ -366,6 +391,18 @@ function keyPressed() {
       }
     }
   }
+
+  if (keyCode === 69) { // "E" for interaction
+    for (let room of rooms) {
+      if (room.type === "statue" && room.visitedRoom && statueActivated) {
+        if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
+          console.log("Player interacted with the statue!");
+          statueActivated = false;
+          // Add functionality like increasing characteristics etc
+        }
+      }
+    }
+  }
 }
 
 function activateConnectedRoomsAndBridges(room) {
@@ -404,33 +441,46 @@ function cameraFollow() {
 }
 
 function fightLevel() {
-  console.log("Fight level spawned!" + roomCounts["fight"]);
   // Spawn enemies
 }
 
 function bonusLevel() {
-  console.log("Bonus level spawned!" + roomCounts["bonus"]);
   // Spawn square in the center of the room that represents chest
   // if player next to this square - 'press "E" to interct with chest'
 }
 
 function shopLevel() {
-  console.log("Shop level spawned!" + roomCounts["shop"]);
   // Spawn square in the center of the room that represents trading post
 }
 
 function bossLevel() {
-  console.log(" ");
-  console.log("Boss level spawned!" + roomCounts["boss"]);
   // Spawn Boss
 }
 
 function portalLevel() {
-  console.log("Portal level spawned!" + roomCounts["portal"]);
   // Move player to the next level
 }
 
 function statueLevel() {
-  console.log("Statue level spawned!" + roomCounts["statue"]);
   // Spawn square in the center of the room that represents statue
+  for (let room of rooms) {
+    if (room.type === "statue" && room.visitedRoom && statueActivated) {
+      // Draw a rectangle in the center of the room
+      fill("grey"); // color
+      rect(
+        room.x - room.size / 10 + offsetX,
+        room.y - room.size / 10 + offsetY,
+        room.size / 5,
+        room.size / 5
+      );
+
+      // Checking if a player is nearby to display a hint
+      if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(16);
+        text('Press "E" to interact with the statue', width / 2, height / 2 - 30);
+      }
+    }
+  }
 }
