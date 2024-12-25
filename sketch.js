@@ -43,7 +43,6 @@ class Player {
       }
     }
 
-
     for (let room of rooms) {
       if (room.isInside(this.x, this.y)) {
         currentRoom = room;
@@ -148,7 +147,7 @@ class Room {
         roomCounts[this.type]++;
       }
 
-      if (this.type === "statue") {
+      if (this.type === "statue" || this.type === "shop") {
         // Make the room visited, if it's a statue
         this.visitedRoom = true;
 
@@ -170,7 +169,6 @@ class Room {
       console.log(`Assigned room type: ${this.type}`);
     }
   }
-  
 
   isInside(x, y) {
     return (    
@@ -245,6 +243,8 @@ let player;
 let offsetX = 0;
 let offsetY = 0;
 let statueActivated = true;
+let showShopUI = false;
+let interactingRoom = null;
 
 const roomCounts = {
   fight: 0,
@@ -293,6 +293,7 @@ function draw() {
   player.move();
 
   statueLevel();
+  shopLevel();
 
   cameraFollow();
 }
@@ -305,7 +306,6 @@ function generateLevel(numRooms) {
   let centerX = width / 2;
   let centerY = height / 2;
   rooms.push(new Room(centerX, centerY, roomSize, "main")); // Central room — main
-
 
   while (rooms.length < numRooms) {
     let direction = random(["up", "down", "left", "right"]);
@@ -394,11 +394,17 @@ function keyPressed() {
 
   if (keyCode === 69) { // "E" for interaction
     for (let room of rooms) {
-      if (room.type === "statue" && room.visitedRoom && statueActivated) {
+      if (room.type === "statue" && statueActivated) {
         if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
           console.log("Player interacted with the statue!");
           statueActivated = false;
           // Add functionality like increasing characteristics etc
+        }
+      }
+
+      if (room.type === "shop" && !showShopUI) {
+        if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
+          console.log("Player interacted with the shop!");
         }
       }
     }
@@ -451,6 +457,48 @@ function bonusLevel() {
 
 function shopLevel() {
   // Spawn square in the center of the room that represents trading post
+  for (let room of rooms) {
+    if (room.type === "shop") {
+      fill("grey"); // color
+      rect(
+        room.x - room.size / 10 + offsetX,
+        room.y - room.size / 10 + offsetY,
+        room.size / 5,
+        room.size / 5
+      );
+
+      // If the player is nearby, show a hint
+      if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(16);
+        text('Press "E" to interact with the shop', width / 2, height / 2 - 30);
+
+        // If the "E" key is pressed, open the store interface
+        if (keyIsDown(69)) { // "E" key
+          showShopUI = true;
+          interactingRoom = room;
+        }
+      }
+    }
+  }
+
+  // If the store is open
+  if (showShopUI && interactingRoom.type === "shop") {
+    fill(200);
+    rect(width / 2 - 200, height / 2 - 150, 400, 300); // Large store interface window
+    fill(0);
+    textAlign(CENTER, CENTER);
+    textSize(20);
+    text("Shop Interface", width / 2, height / 2 - 100);
+    text("Buy items or exit", width / 2, height / 2);
+
+    // If the player leaves the store or presses "ESC", close the interface
+    if ((dist(player.x, player.y, interactingRoom.x, interactingRoom.y) >= interactingRoom.size / 3) || keyCode === 27) {
+      showShopUI = false;
+      interactingRoom = null;
+    }
+  }
 }
 
 function bossLevel() {
@@ -464,7 +512,7 @@ function portalLevel() {
 function statueLevel() {
   // Spawn square in the center of the room that represents statue
   for (let room of rooms) {
-    if (room.type === "statue" && room.visitedRoom && statueActivated) {
+    if (room.type === "statue" && statueActivated) {
       // Draw a rectangle in the center of the room
       fill("grey"); // color
       rect(
