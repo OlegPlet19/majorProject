@@ -147,7 +147,7 @@ class Room {
         roomCounts[this.type]++;
       }
 
-      if (this.type === "statue" || this.type === "shop") {
+      if (this.type === "statue" || this.type === "shop" || this.type === "bonus") {
         // Make the room visited, if it's a statue
         this.visitedRoom = true;
 
@@ -245,6 +245,7 @@ let offsetY = 0;
 let statueActivated = true;
 let showShopUI = false;
 let interactingRoom = null;
+let chestActivated = true;
 
 const roomCounts = {
   fight: 0,
@@ -267,6 +268,7 @@ const maxRoomsByType = {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  // generateLevel(9, windowHeight>windowWidth? height/2 : width/2); // Generation of a level with what ever # of rooms you set here?
   generateLevel(9); // Generation of a level with what ever # of rooms you set here
   player = new Player(rooms[0].x, rooms[0].y, 10, rooms[0].size / 20);
   rooms[0].isOpen = true; // Central room becomes open
@@ -294,10 +296,14 @@ function draw() {
 
   statueLevel();
   shopLevel();
+  bonusLevel();
 
   cameraFollow();
 }
 
+// function generateLevel(numRooms, sizeOfRooms) {
+//   let roomSize = sizeOfRooms;
+//   let bridgeSize = sizeOfRooms/2;
 function generateLevel(numRooms) {
   let roomSize = 100;
   let bridgeSize = 50;
@@ -407,6 +413,14 @@ function keyPressed() {
           console.log("Player interacted with the shop!");
         }
       }
+
+      if (room.type === "bonus" && chestActivated) {
+        if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
+          console.log("Player interacted with the chest!");
+          chestActivated = false;
+          // Give items
+        }
+      }
     }
   }
 }
@@ -453,6 +467,26 @@ function fightLevel() {
 function bonusLevel() {
   // Spawn square in the center of the room that represents chest
   // if player next to this square - 'press "E" to interct with chest'
+  for (let room of rooms) {
+    if (room.type === "bonus" && chestActivated) {
+      // Draw a rectangle in the center of the room
+      fill("grey"); // color
+      rect(
+        room.x - room.size / 10 + offsetX,
+        room.y - room.size / 10 + offsetY,
+        room.size / 5,
+        room.size / 5
+      );
+
+      // Checking if a player is nearby to display a hint
+      if (dist(player.x, player.y, room.x, room.y) < room.size / 3) {
+        fill(0);
+        textAlign(CENTER, CENTER);
+        textSize(16);
+        text('Press "E" to interact with the chest', width / 2, height / 2 - 30);
+      }
+    }
+  }
 }
 
 function shopLevel() {
